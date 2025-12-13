@@ -6,15 +6,15 @@ public class StudentManagementSystem {
  static Scanner input = new Scanner(System.in);
 
       // Files
-     static final String STUDENTS_FILE = "students.txt";   // roll name
-     static final String PASSWORDS_FILE = "passwords.txt"; // roll password
-     static final String MARKS_FILE = "marks.txt";         // eng math sci
-     static final String ATTENDANCE_FILE = "attendance.txt"; // single value per line
-     static final String FEES_FILE = "fees.txt";           // fee status per line
+    private static final String STUDENTS_FILE = "students.txt";   // roll name
+    private static final String PASSWORDS_FILE = "passwords.txt"; // roll password
+    private static final String MARKS_FILE = "marks.txt";         // eng math sci
+    private static final String ATTENDANCE_FILE = "attendance.txt"; // single value per line
+    private static final String FEES_FILE = "fees.txt";           // fee status per line
 
     // Login credentials for admin (changeable)
-     static String adminID = "admin";
-     static String adminPassword = "adminpass";
+    private static String adminID = "admin";
+    private static String adminPassword = "adminpass";
 
     // Arrays (PF requirement)
     static final int MAX_STUDENTS = 500; // generous limit
@@ -36,9 +36,8 @@ public class StudentManagementSystem {
     // Default password for new students
     static final String DEFAULT_STUDENT_PASSWORD = "student123";
 
-
     public static void main(String[] args) {
-
+        ensureFilesExist();
         mainMenu();
     }
 
@@ -58,10 +57,10 @@ public class StudentManagementSystem {
             catch (Exception e) { System.out.println("Invalid choice!"); continue; }
 
             switch (choice) {
-                case 1 : adminLogin();
-                case 2 : studentLogin();
-                case 3 : { System.out.println("Exiting system... Goodbye!"); return; }
-                default : System.out.println("Invalid choice!");
+                case 1 -> adminLogin();
+                case 2 -> studentLogin();
+                case 3 -> { System.out.println("Exiting system... Goodbye!"); return; }
+                default -> System.out.println("Invalid choice!");
             }
         }
     }
@@ -86,11 +85,11 @@ public class StudentManagementSystem {
     // ----------------- Student Login (B2) -----------------
     static void studentLogin() {
         // load students & passwords so we can authenticate
-       /*  loadStudentsFromFile();
+        loadStudentsFromFile();
         loadPasswordsFromFile();
         loadMarksFromFile(); // optional to show marks immediately
         loadAttendanceFromFile();
-        loadFeesFromFile();*/
+        loadFeesFromFile();
 
         System.out.print("Enter Roll Number: ");
         String line = input.nextLine().trim();
@@ -116,10 +115,8 @@ public class StudentManagementSystem {
             System.out.println("Invalid password.");
         }
     }
- }
 
-
-  // ----------------- Admin Menu (hierarchical) -----------------
+    // ----------------- Admin Menu (hierarchical) -----------------
     static void adminMenu() {
         while (true) {
             System.out.println("\n===== ADMIN MENU =====");
@@ -493,66 +490,328 @@ public class StudentManagementSystem {
         System.out.println(names[idx] + " - " + status + " (" + String.format("%.2f", percentage) + "%)");
     }
 
+    // ----------------- Report Card generation -----------------
+    static void generateReportCardMenu() {
+        System.out.print("Enter Roll Number to generate report: ");
+        String rl = input.nextLine().trim();
+        int roll;
+        try { roll = Integer.parseInt(rl); } catch (Exception e) { System.out.println("Invalid roll."); return; }
 
+        loadAllData(); // ensure latest
+        int idx = getIndexByRoll(roll);
+        if (idx == -1) { System.out.println("Student not found."); return; }
 
-    static void changeStudentPassword() {
+        generateReportForIndex(idx);
+        System.out.println("Report generated: report_" + roll + ".txt");
+    }
+
+    static void generateReportForIndex(int idx) {
+        String filename = "report_" + rollNumbers[idx] + ".txt";
+        try (PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
+            pw.println("========== REPORT CARD ==========");
+            pw.println("Name : " + names[idx]);
+            pw.println("Roll : " + rollNumbers[idx]);
+            pw.println();
+            pw.println("Marks:");
+            pw.println("  English : " + english[idx]);
+            pw.println("  Maths   : " + maths[idx]);
+            pw.println("  Science : " + science[idx]);
+            int total = english[idx] + maths[idx] + science[idx];
+            double percent = total / 3.0;
+            pw.println();
+            pw.println("Total      : " + total);
+            pw.println("Percentage : " + String.format("%.2f", percent) + "%");
+            String grade = (percent >= 90) ? "A+" :
+                           (percent >= 80) ? "A" :
+                           (percent >= 70) ? "B" :
+                           (percent >= 60) ? "C" :
+                           (percent >= 50) ? "D" : "F";
+            pw.println("Grade      : " + grade);
+            pw.println();
+            pw.println("Attendance : " + attendance[idx] + "%");
+            String scholarship = (percent >= 85) ? "Full Scholarship" :
+                                 (percent >= 70) ? "Partial Scholarship" : "No Scholarship";
+            pw.println("Scholarship: " + scholarship);
+            pw.println("Fee Status : " + feeStatus[idx]);
+            pw.println("==================================");
+        } catch (Exception e) {
+            System.out.println("Error writing report file: " + e.getMessage());
+        }
+    }
+
+    // ----------------- Change admin password -----------------
+    static void changeAdminPassword() {
+        System.out.print("Enter current admin password: ");
+        String current = input.nextLine().trim();
+        if (!current.equals(adminPassword)) {
+            System.out.println("Incorrect current password!");
+            return;
+        }
+        System.out.print("Enter new password: ");
+        String newPass = input.nextLine().trim();
+        System.out.print("Confirm new password: ");
+        String confirm = input.nextLine().trim();
+        if (newPass.equals(confirm)) {
+            adminPassword = newPass;
+            System.out.println("Admin password updated successfully!");
+        } else System.out.println("Passwords do not match.");
+    }
+
+    // ----------------- Student Menu (after successful login) -----------------
+    static void studentMenu(int idx) {
+        // idx is the student index in arrays
+        while (true) {
+            System.out.println("\n====== STUDENT MENU ======");
+            System.out.println("1) View Profile");
+            System.out.println("2) View Marks");
+            System.out.println("3) View Attendance");
+            System.out.println("4) View Fee Status");
+            System.out.println("5) Download Report Card");
+            System.out.println("6) Change Password");
+            System.out.println("7) Logout");
+            System.out.print("Choose: ");
+
+            String raw = input.nextLine().trim();
+            int choice;
+            try { choice = Integer.parseInt(raw); } catch (Exception e) { System.out.println("Invalid choice!"); continue; }
+
+            switch (choice) {
+                case 1 -> viewProfileForIndex(idx);
+                case 2 -> viewMarksForIndex(idx);
+                case 3 -> System.out.println("Attendance: " + attendance[idx] + "%");
+                case 4 -> System.out.println("Fee Status: " + feeStatus[idx]);
+                case 5 -> { generateReportForIndex(idx); System.out.println("Report generated."); }
+                case 6 -> { changeStudentPasswordInteractive(idx); savePasswordsToFile(); }
+                case 7 -> { System.out.println("Logging out student."); return; }
+                default -> System.out.println("Invalid choice!");
+            }
+        }
+    }
+
+    static void viewProfileForIndex(int idx) {
+        System.out.println("----- Profile -----");
+        System.out.println("Student ID: " + rollNumbers[idx]);
+        System.out.println("Name: " + names[idx]);
+    }
+
+    static void viewMarksForIndex(int idx) {
+        System.out.println("\n--- MARKS ---");
+        System.out.println("English: " + english[idx]);
+        System.out.println("Maths  : " + maths[idx]);
+        System.out.println("Science: " + science[idx]);
+        int total = english[idx] + maths[idx] + science[idx];
+        double percent = total / 3.0;
+        System.out.println("Percentage: " + String.format("%.2f", percent) + "%");
+        String scholarship = (percent >= 85) ? "Full Scholarship" : (percent >= 70) ? "Partial Scholarship" : "No Scholarship";
+        System.out.println("Scholarship Status: " + scholarship);
+    }
+
+    static void changeStudentPasswordInteractive(int idx) {
         System.out.print("Enter current password: ");
-        String current = input.next();
-
-        if (!current.equals(studentPassword)) {
+        String current = input.nextLine().trim();
+        if (!current.equals(studentPasswords[idx])) {
             System.out.println("Incorrect password!");
             return;
         }
-
         System.out.print("Enter new password: ");
-        String newPass = input.next();
-
+        String newPass = input.nextLine().trim();
         System.out.print("Confirm new password: ");
-        String confirm = input.next();
-
+        String confirm = input.nextLine().trim();
         if (newPass.equals(confirm)) {
-            studentPassword = newPass;
-            System.out.println("Student password updated successfully!");
+            studentPasswords[idx] = newPass;
+            System.out.println("Password updated successfully!");
         } else {
             System.out.println("Passwords do not match.");
         }
     }
 
-    // -------------------------------------------------------------------------
-    // -------------------------------- SEARCH ----------------------------------
-    // -------------------------------------------------------------------------
-
-    static int searchStudent(int roll) {
+    // ----------------- Utilities: Search by roll -----------------
+    static int getIndexByRoll(int roll) {
         for (int i = 0; i < studentCount; i++) {
-            if (rollNumbers[i] == roll)
-                return i;
+            if (rollNumbers[i] == roll) return i;
         }
         return -1;
     }
 
-    static void viewProfile() {
-        System.out.println("----- Profile -----");
-        System.out.println("Student ID: " + studentID);
-        System.out.println("Name: " + names[0]);
-    }
-
-    // -------------------------------------------------------------------------
-    // --------------------------- VALIDATION HELPERS ---------------------------
-    // -------------------------------------------------------------------------
-
-    // CHANGE: helper to safely parse integer input
-    static int parseInt(String value) {
+    // ----------------- File handling: ensure files exist -----------------
+    static void ensureFilesExist() {
         try {
-            int intChoice = Integer.parseInt(value);
-            return intChoice;
-        }catch(NumberFormatException e){
-            System.out.println("Enter a valid numeric value.");
-            return 0;
-        } 
-        catch (Exception e) {
-            System.out.println("Invalid numeric input! Defaulting to 0.");
-            return 0;
+            File f1 = new File(STUDENTS_FILE); if (!f1.exists()) f1.createNewFile();
+            File f2 = new File(PASSWORDS_FILE); if (!f2.exists()) f2.createNewFile();
+            File f3 = new File(MARKS_FILE); if (!f3.exists()) f3.createNewFile();
+            File f4 = new File(ATTENDANCE_FILE); if (!f4.exists()) f4.createNewFile();
+            File f5 = new File(FEES_FILE); if (!f5.exists()) f5.createNewFile();
+        } catch (Exception e) {
+            System.out.println("Error ensuring files exist: " + e.getMessage());
         }
     }
 
+    // ----------------- Load/Save routines -----------------
+    static void loadAllData() {
+        loadStudentsFromFile();
+        loadPasswordsFromFile();
+        loadMarksFromFile();
+        loadAttendanceFromFile();
+        loadFeesFromFile();
+    }
+
+    static void saveAllData() {
+        saveStudentsToFile();
+        savePasswordsToFile();
+        saveMarksToFile();
+        saveAttendanceToFile();
+        saveFeesToFile();
+    }
+
+    // --- Students file: roll and name on same line ---
+    static void saveStudentsToFile() {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(STUDENTS_FILE, false))) {
+            for (int i = 0; i < studentCount; i++) {
+                pw.println(rollNumbers[i] + " " + names[i]);
+            }
+        } catch (Exception e) {
+            System.out.println("Error writing students file: " + e.getMessage());
+        }
+    }
+
+    static void loadStudentsFromFile() {
+        try (Scanner sc = new Scanner(new File(STUDENTS_FILE))) {
+            studentCount = 0;
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine().trim();
+                if (line.isEmpty()) continue;
+                // split into two tokens: roll and name (name without spaces recommended)
+                String[] parts = line.split("\\s+", 2);
+                if (parts.length < 2) { System.out.println("Bad line in students file: " + line); continue; }
+                rollNumbers[studentCount] = Integer.parseInt(parts[0]);
+                names[studentCount] = parts[1];
+                studentCount++;
+                if (studentCount >= MAX_STUDENTS) break;
+            }
+        } catch (FileNotFoundException e) {
+            // file will be created later; keep arrays empty
+            studentCount = 0;
+        } catch (Exception e) {
+            System.out.println("Error reading students file: " + e.getMessage());
+        }
+    }
+
+    // --- Passwords file: roll password ---
+    static void savePasswordsToFile() {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(PASSWORDS_FILE, false))) {
+            for (int i = 0; i < studentCount; i++) {
+                String pass = studentPasswords[i] == null ? DEFAULT_STUDENT_PASSWORD : studentPasswords[i];
+                pw.println(rollNumbers[i] + " " + pass);
+            }
+        } catch (Exception e) {
+            System.out.println("Error writing passwords file: " + e.getMessage());
+        }
+    }
+
+    static void loadPasswordsFromFile() {
+        try (Scanner sc = new Scanner(new File(PASSWORDS_FILE))) {
+            int idx = 0;
+            while (sc.hasNextLine() && idx < MAX_STUDENTS) {
+                String line = sc.nextLine().trim();
+                if (line.isEmpty()) continue;
+                String[] parts = line.split("\\s+", 2);
+                if (parts.length < 2) continue;
+                int roll = Integer.parseInt(parts[0]);
+                String pass = parts[1];
+                // find index by roll in current arrays (students should be loaded first)
+                int pos = getIndexByRoll(roll);
+                if (pos != -1) studentPasswords[pos] = pass;
+                idx++;
+            }
+        } catch (FileNotFoundException e) {
+            // file may not exist yet
+        } catch (Exception e) {
+            System.out.println("Error reading passwords file: " + e.getMessage());
+        }
+    }
+
+    // --- Marks file: english maths science (one line per student) ---
+    static void saveMarksToFile() {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(MARKS_FILE, false))) {
+            for (int i = 0; i < studentCount; i++) {
+                pw.println(english[i] + " " + maths[i] + " " + science[i]);
+            }
+        } catch (Exception e) {
+            System.out.println("Error writing marks file: " + e.getMessage());
+        }
+    }
+
+    static void loadMarksFromFile() {
+        try (Scanner sc = new Scanner(new File(MARKS_FILE))) {
+            int idx = 0;
+            while (sc.hasNextLine() && idx < studentCount) {
+                String line = sc.nextLine().trim();
+                if (line.isEmpty()) continue;
+                String[] parts = line.split("\\s+");
+                try {
+                    english[idx] = Integer.parseInt(parts[0]);
+                    maths[idx] = Integer.parseInt(parts[1]);
+                    science[idx] = Integer.parseInt(parts[2]);
+                } catch (Exception ex) {
+                    // leave zeros if missing data
+                }
+                idx++;
+            }
+        } catch (FileNotFoundException e) {
+            // no marks yet
+        } catch (Exception e) {
+            System.out.println("Error reading marks file: " + e.getMessage());
+        }
+    }
+
+    // --- Attendance file: single integer per line ---
+    static void saveAttendanceToFile() {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(ATTENDANCE_FILE, false))) {
+            for (int i = 0; i < studentCount; i++) {
+                pw.println(attendance[i]);
+            }
+        } catch (Exception e) {
+            System.out.println("Error writing attendance file: " + e.getMessage());
+        }
+    }
+
+    static void loadAttendanceFromFile() {
+        try (Scanner sc = new Scanner(new File(ATTENDANCE_FILE))) {
+            int idx = 0;
+            while (sc.hasNextLine() && idx < studentCount) {
+                String line = sc.nextLine().trim();
+                if (line.isEmpty()) continue;
+                try { attendance[idx] = Integer.parseInt(line); } catch (Exception ex) { attendance[idx] = 0; }
+                idx++;
+            }
+        } catch (FileNotFoundException e) {
+            // no attendance yet
+        } catch (Exception e) {
+            System.out.println("Error reading attendance file: " + e.getMessage());
+        }
+    }
+
+    // --- Fees file: one token per line (Paid/NotPaid) ---
+    static void saveFeesToFile() {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(FEES_FILE, false))) {
+            for (int i = 0; i < studentCount; i++) {
+                pw.println(feeStatus[i] == null ? "NotPaid" : feeStatus[i]);
+            }
+        } catch (Exception e) {
+            System.out.println("Error writing fees file: " + e.getMessage());
+        }
+    }
+
+    static void loadFeesFromFile() {
+        try (Scanner sc = new Scanner(new File(FEES_FILE))) {
+            int idx = 0;
+            while (sc.hasNextLine() && idx < studentCount) {
+                feeStatus[idx] = sc.nextLine().trim();
+                idx++;
+            }
+        } catch (FileNotFoundException e) {
+            // no fees yet
+        } catch (Exception e) {
+            System.out.println("Error reading fees file: " + e.getMessage());
+        }
 
