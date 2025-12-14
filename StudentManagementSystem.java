@@ -1,5 +1,5 @@
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 public class StudentManagementSystem {
 
@@ -309,9 +309,10 @@ public class StudentManagementSystem {
         catch (Exception e) { System.out.println("Invalid marks."); return; }
 
         switch (sub) {
-            case 1 : english[idx] = m;
-            case 2 : maths[idx] = m;
-            case 3 : science[idx] = m;
+            case 1 : english[idx] = m; break;
+            case 2 : maths[idx] = m; break;
+            case 3 : science[idx] = m; break;
+            
         }
         System.out.println("Marks saved for " + names[idx]+"-- Roll No: "+rollNumbers[idx]);
     }
