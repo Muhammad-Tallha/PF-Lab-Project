@@ -1,5 +1,5 @@
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 public class StudentManagementSystem {
 
@@ -802,16 +802,18 @@ public class StudentManagementSystem {
         }
     }
 
-    static void loadFeesFromFile() {
-        try (Scanner sc = new Scanner(new File(FEES_FILE))) {
-            int idx = 0;
-            while (sc.hasNextLine() && idx < studentCount) {
-                feeStatus[idx] = sc.nextLine().trim();
-                idx++;
+        static void loadFeesFromFile() {
+            try (Scanner sc = new Scanner(new File(FEES_FILE))) {
+                int idx = 0;
+                while (sc.hasNextLine() && idx < studentCount) {
+                    feeStatus[idx] = sc.nextLine().trim();
+                    idx++;
+                }
+            } catch (FileNotFoundException e) {
+                // no fees yet
+            } catch (Exception e) {
+                System.out.println("Error reading fees file: " + e.getMessage());
             }
-        } catch (FileNotFoundException e) {
-            // no fees yet
-        } catch (Exception e) {
-            System.out.println("Error reading fees file: " + e.getMessage());
         }
+    }
 
