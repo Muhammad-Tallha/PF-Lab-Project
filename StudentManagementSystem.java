@@ -1,26 +1,28 @@
-import java.io.*;
 import java.util.*;
+import java.io.*;
 
 public class StudentManagementSystem {
 
+
  static Scanner input = new Scanner(System.in);
 
-      // Files
-    private static final String STUDENTS_FILE = "students.txt";   // roll name
-    private static final String PASSWORDS_FILE = "passwords.txt"; // roll password
-    private static final String MARKS_FILE = "marks.txt";         // eng math sci
-    private static final String ATTENDANCE_FILE = "attendance.txt"; // single value per line
-    private static final String FEES_FILE = "fees.txt";           // fee status per line
+    // Files
+     static final String STUDENTS_FILE = "students.txt";   // roll name
+     static final String PASSWORDS_FILE = "passwords.txt"; // roll password
+     static final String MARKS_FILE = "marks.txt";         // eng math sci
+     static final String ATTENDANCE_FILE = "attendance.txt"; // single value per line
+     static final String FEES_FILE = "fees.txt";           // fee status per line
 
-    // Login credentials for admin (changeable)
-    private static String adminID = "admin";
-    private static String adminPassword = "adminpass";
+    // Login credentials for admin (can be changed)
+     static String adminID = "admin";
+     static String adminPassword = "adminpass";
 
-    // Arrays (PF requirement)
+    // Arrays 
     static final int MAX_STUDENTS = 500; // generous limit
     static int[] rollNumbers = new int[MAX_STUDENTS];
     static String[] names = new String[MAX_STUDENTS];
     static String[] studentPasswords = new String[MAX_STUDENTS]; // per-student password
+
 
     // Subject marks arrays
     static int[] english = new int[MAX_STUDENTS];
@@ -28,8 +30,9 @@ public class StudentManagementSystem {
     static int[] science = new int[MAX_STUDENTS];
 
     // Attendance and fee
-    static int[] attendance = new int[MAX_STUDENTS]; // percentage
-    static String[] feeStatus = new String[MAX_STUDENTS]; // "Paid" / "NotPaid"
+    static String[] attendance = new String[MAX_STUDENTS]; // percentage
+    static int [] AttendancePercentage = new int [MAX_STUDENTS];
+    static String[] feeStatus = new String[MAX_STUDENTS]; // "Paid" r "NotPaid"
 
     static int studentCount = 0;
 
@@ -50,29 +53,29 @@ public class StudentManagementSystem {
             System.out.println("3) Exit");
             System.out.print("Enter choice: ");
 
-            String raw = input.nextLine().trim();
-            if (raw.isEmpty()) { System.out.println("Invalid choice!"); continue; }
-            int choice;
-            try { choice = Integer.parseInt(raw); }
+            String choice = input.nextLine().trim();//I added trim so that if only spaces entered our throw can catch and deal with exception i.e .isEmpty()
+            if (choice.isEmpty()) { System.out.println("Invalid choice!"); continue; }
+            int choiceNum;
+            try { choiceNum = Integer.parseInt(choice); }
             catch (Exception e) { System.out.println("Invalid choice!"); continue; }
 
-            switch (choice) {
-                case 1 -> adminLogin();
-                case 2 -> studentLogin();
-                case 3 -> { System.out.println("Exiting system... Goodbye!"); return; }
-                default -> System.out.println("Invalid choice!");
+            switch (choiceNum) {
+                case 1 : adminLogin();
+                case 2 : studentLogin();
+                case 3 : { System.out.println("Exiting system... Goodbye!"); return; }
+                default : System.out.println("Invalid choice!");
             }
         }
-    }
+    }    
 
     // ----------------- Admin Login -----------------
     static void adminLogin() {
         System.out.print("Enter Admin ID: ");
-        String u = input.nextLine().trim();
+        String username = input.nextLine().trim();
         System.out.print("Enter password: ");
-        String p = input.nextLine().trim();
+        String password = input.nextLine().trim();
 
-        if (u.equals(adminID) && p.equals(adminPassword)) {
+        if (username.equals(adminID) && password.equals(adminPassword)) {
             System.out.println("Login Successful!");
             // Load all data into arrays at admin login so admin works on latest data
             loadAllData();
@@ -82,9 +85,9 @@ public class StudentManagementSystem {
         }
     }
 
-    // ----------------- Student Login (B2) -----------------
+    // ----------------- Student Login -----------------
     static void studentLogin() {
-        // load students & passwords so we can authenticate
+        // load students & passwords so we compare and match then proceed else retturn
         loadStudentsFromFile();
         loadPasswordsFromFile();
         loadMarksFromFile(); // optional to show marks immediately
@@ -116,7 +119,7 @@ public class StudentManagementSystem {
         }
     }
 
-    // ----------------- Admin Menu (hierarchical) -----------------
+    // ----------------- Admin Menu -----------------
     static void adminMenu() {
         while (true) {
             System.out.println("\n===== ADMIN MENU =====");
@@ -129,24 +132,24 @@ public class StudentManagementSystem {
             System.out.println("7) Logout");
             System.out.print("Choose: ");
 
-            String raw = input.nextLine().trim();
-            int choice;
-            try { choice = Integer.parseInt(raw); } catch (Exception e) { System.out.println("Invalid choice!"); continue; }
+            String choice = input.nextLine().trim();
+            int choiceNum;
+            try { choiceNum= Integer.parseInt(choice); } catch (Exception e) { System.out.println("Invalid choice!"); continue; }
 
-            switch (choice) {
-                case 1 -> studentParticularsMenu();
-                case 2 -> resultManagementMenu();
-                case 3 -> attendanceMenu();
-                case 4 -> feeMenu();
-                case 5 -> generateReportCardMenu();
-                case 6 -> changeAdminPassword();
-                case 7 -> {
+            switch (choiceNum) {
+                case 1 : studentParticularsMenu();
+                case 2 : resultManagementMenu();
+                case 3 : attendanceMenu();
+                case 4 : feeMenu();
+                case 5 : generateReportCardMenu();
+                case 6 : changeAdminPassword();
+                case 7 : {
                     // save everything before logging out
                     saveAllData();
                     System.out.println("Logging out admin.");
                     return;
                 }
-                default -> System.out.println("Invalid choice!");
+                default : System.out.println("Invalid choice!");
             }
         }
     }
@@ -166,11 +169,11 @@ public class StudentManagementSystem {
             try { choice = Integer.parseInt(raw); } catch (Exception e) { System.out.println("Invalid choice!"); continue; }
 
             switch (choice) {
-                case 1 -> { addStudentInteractive(); saveAllData(); }
-                case 2 -> { editStudentInteractive(); saveAllData(); }
-                case 3 -> { loadStudentsFromFile(); viewStudents(); }
-                case 4 -> { return; }
-                default -> System.out.println("Invalid choice!");
+                case 1 : { addStudentInteractive(); saveAllData(); }
+                case 2 : { editStudentInteractive(); saveAllData(); }
+                case 3 : { loadStudentsFromFile(); viewStudents(); }
+                case 4 : { return; }
+                default : System.out.println("Invalid choice!");
             }
         }
     }
@@ -187,12 +190,13 @@ public class StudentManagementSystem {
         try { roll = Integer.parseInt(rollLine); }
         catch (Exception e) { System.out.println("Invalid roll number."); return; }
 
-        // check no duplicate roll
+        // checking for duplicate rollNo bcz duplication will mess up our data consistence and integrity
         if (getIndexByRoll(roll) != -1) { System.out.println("Roll number already exists!"); return; }
 
-        System.out.print("Enter Name (no spaces preferred): ");
+        System.out.print("Enter Name : ");
         String name = input.nextLine().trim();
-        if (name.isEmpty()) { System.out.println("Invalid name."); return; }
+        if (name.isEmpty()) 
+            { System.out.println("Invalid name."); return; }
 
         // store in arrays at studentCount
         rollNumbers[studentCount] = roll;
@@ -203,7 +207,7 @@ public class StudentManagementSystem {
         english[studentCount] = 0;
         maths[studentCount] = 0;
         science[studentCount] = 0;
-        attendance[studentCount] = 0;
+        attendance[studentCount] = "";
         feeStatus[studentCount] = "NotPaid";
 
         studentCount++;
@@ -218,7 +222,8 @@ public class StudentManagementSystem {
         System.out.print("Enter Roll Number to edit: ");
         String rl = input.nextLine().trim();
         int roll;
-        try { roll = Integer.parseInt(rl); } catch (Exception e) { System.out.println("Invalid roll."); return; }
+        try { roll = Integer.parseInt(rl);
+        }catch (Exception e) { System.out.println("Invalid roll."); return; }
 
         int idx = getIndexByRoll(roll);
         if (idx == -1) { System.out.println("Student not found!"); return; }
@@ -256,12 +261,12 @@ public class StudentManagementSystem {
             try { ch = Integer.parseInt(raw); } catch (Exception e) { System.out.println("Invalid choice!"); continue; }
 
             switch (ch) {
-                case 1 -> { addMarksInteractive(); saveMarksToFile(); }
-                case 2 -> { updateMarksInteractive(); saveMarksToFile(); }
-                case 3 -> { loadMarksFromFile(); viewMarksAdmin(); }
-                case 4 -> { loadMarksFromFile(); viewGradeAdmin(); }
-                case 5 -> { return; }
-                default -> System.out.println("Invalid choice!");
+                case 1 : { addMarksInteractive(); saveMarksToFile(); }
+                case 2 : { updateMarksInteractive(); saveMarksToFile(); }
+                case 3 : { loadMarksFromFile(); viewMarksAdmin(); }
+                case 4 : { loadMarksFromFile(); viewGradeAdmin(); }
+                case 5 : { return; }
+                default : System.out.println("Invalid choice!");
             }
         }
     }
@@ -278,7 +283,7 @@ public class StudentManagementSystem {
             try {
                 int s = Integer.parseInt(raw);
                 if (s >=1 && s <=3) return s;
-            } catch (Exception ignored) {}
+            } catch (Exception e) {}
             System.out.println("Invalid subject choice.");
         }
     }
@@ -304,16 +309,18 @@ public class StudentManagementSystem {
         catch (Exception e) { System.out.println("Invalid marks."); return; }
 
         switch (sub) {
-            case 1 -> english[idx] = m;
-            case 2 -> maths[idx] = m;
-            case 3 -> science[idx] = m;
+            case 1 : english[idx] = m;
+            case 2 : maths[idx] = m;
+            case 3 : science[idx] = m;
         }
-        System.out.println("Marks saved for " + names[idx]);
+        System.out.println("Marks saved for " + names[idx]+"-- Roll No: "+rollNumbers[idx]);
     }
 
-    // update marks (same UI)
+    // update marks (same interface as add marks)
     static void updateMarksInteractive() {
-        addMarksInteractive(); // same flow works for update as well
+       try{ addMarksInteractive(); 
+       }catch(Exception e){
+        System.out.println("Marks updated Succesfully");}
     }
 
     // view marks for a student (by roll)
@@ -326,7 +333,7 @@ public class StudentManagementSystem {
         int idx = getIndexByRoll(roll);
         if (idx == -1) { System.out.println("Student not found!"); return; }
 
-        System.out.println("\n--- MARKS for " + names[idx] + " ---");
+        System.out.println("\n--- MARKS for " + names[idx] + " --- Roll # "+rollNumbers[idx]);
         System.out.println("English: " + english[idx]);
         System.out.println("Maths  : " + maths[idx]);
         System.out.println("Science: " + science[idx]);
@@ -352,7 +359,7 @@ public class StudentManagementSystem {
         else if (percentage >= 50) grade = "D";
         else grade = "F";
 
-        System.out.println("Percentage: " + String.format("%.2f", percentage) + "%");
+        System.out.printf("Percentage: %.2f ", percentage + "%");
         System.out.println("Grade: " + grade);
     }
 
@@ -360,10 +367,9 @@ public class StudentManagementSystem {
     static void attendanceMenu() {
         while (true) {
             System.out.println("\n--- ATTENDANCE RECORD ---");
-            System.out.println("1) Mark Attendance (set percentage)");
-            System.out.println("2) Update Attendance");
-            System.out.println("3) View Attendance Percentage (by roll)");
-            System.out.println("4) Back");
+            System.out.println("1) Mark Attendance");
+            System.out.println("2) View Attendance Percentage (by roll)");
+            System.out.println("3) Back");
             System.out.print("Choose: ");
 
             String raw = input.nextLine().trim();
@@ -371,11 +377,10 @@ public class StudentManagementSystem {
             try { ch = Integer.parseInt(raw); } catch (Exception e) { System.out.println("Invalid choice!"); continue; }
 
             switch (ch) {
-                case 1 -> { markAttendanceInteractive(); saveAttendanceToFile(); }
-                case 2 -> { markAttendanceInteractive(); saveAttendanceToFile(); }
-                case 3 -> { loadAttendanceFromFile(); viewAttendanceAdmin(); }
-                case 4 -> { return; }
-                default -> System.out.println("Invalid choice!");
+                case 1 : { markAttendanceInteractive(); saveAttendanceToFile(); }
+                case 2 : { loadAttendanceFromFile(); viewAttendanceAdmin(); }
+                case 3 : { return; }
+                default : System.out.println("Invalid choice!");
             }
         }
     }
@@ -392,14 +397,17 @@ public class StudentManagementSystem {
         int idx = getIndexByRoll(roll);
         if (idx == -1) { System.out.println("Student not found!"); return; }
 
-        System.out.print("Enter Attendance Percentage (0-100): ");
-        String pline = input.nextLine().trim();
-        int p;
-        try { p = Integer.parseInt(pline); if (p < 0 || p > 100) throw new Exception(); }
-        catch (Exception e) { System.out.println("Invalid percentage."); return; }
+        System.out.print("Mark attendance (P/A): ");
+        char ch = input.next().toUpperCase().charAt(0);
 
-        attendance[idx] = p;
-        System.out.println("Attendance updated for " + names[idx] + ": " + p + "%");
+        if (ch == 'P' || ch == 'A') {
+                attendance[idx] += ch;
+        System.out.println("Attendance marked!");
+         } else {
+        System.out.println("Invalid input! Use P or A only.");
+    }
+        System.out.println("Attendance updated for " + names[idx]);
+        System.out.println("Current attendance for"+names[idx]+" : "+attendance[idx]+" ");
     }
 
     static void viewAttendanceAdmin() {
@@ -410,8 +418,19 @@ public class StudentManagementSystem {
 
         int idx = getIndexByRoll(roll);
         if (idx == -1) { System.out.println("Student not found!"); return; }
-
-        System.out.println(names[idx] + " - Attendance: " + attendance[idx] + "%");
+        String str = attendance[idx];
+        int count = 0;
+        int present=0;
+        char attend ;
+        for(int i=0; i<str.length();i++){
+            attend = str.charAt(i);
+            if(attend == 'P'){present++;}
+            count++;
+        }
+        AttendancePercentage[idx] = (present*100)/count;
+        System.out.println("AttendancePercentage : "+AttendancePercentage[idx]+" %" );
+        
+        
     }
 
     // ----------------- Fee Menu -----------------
@@ -424,16 +443,16 @@ public class StudentManagementSystem {
             System.out.println("4) Back");
             System.out.print("Choose: ");
 
-            String raw = input.nextLine().trim();
+            String raw = input.nextLine().trim();//so empty string cn be identified
             int ch;
             try { ch = Integer.parseInt(raw); } catch (Exception e) { System.out.println("Invalid choice!"); continue; }
 
             switch (ch) {
-                case 1 -> { loadFeesFromFile(); viewFeeStatusAdmin(); }
-                case 2 -> { updateFeeInteractive(); saveFeesToFile(); }
-                case 3 -> { loadMarksFromFile(); viewScholarshipStatus(); }
-                case 4 -> { return; }
-                default -> System.out.println("Invalid choice!");
+                case 1 : { loadFeesFromFile(); viewFeeStatusAdmin(); }
+                case 2 : { updateFeeInteractive(); saveFeesToFile(); }
+                case 3 : { loadMarksFromFile(); viewScholarshipStatus(); }
+                case 4 : { return; }
+                default : System.out.println("Invalid choice!");
             }
         }
     }
@@ -559,7 +578,7 @@ public class StudentManagementSystem {
 
     // ----------------- Student Menu (after successful login) -----------------
     static void studentMenu(int idx) {
-        // idx is the student index in arrays
+        // idx is the student index in arrays as each array has same student's data at a particular index
         while (true) {
             System.out.println("\n====== STUDENT MENU ======");
             System.out.println("1) View Profile");
@@ -576,14 +595,14 @@ public class StudentManagementSystem {
             try { choice = Integer.parseInt(raw); } catch (Exception e) { System.out.println("Invalid choice!"); continue; }
 
             switch (choice) {
-                case 1 -> viewProfileForIndex(idx);
-                case 2 -> viewMarksForIndex(idx);
-                case 3 -> System.out.println("Attendance: " + attendance[idx] + "%");
-                case 4 -> System.out.println("Fee Status: " + feeStatus[idx]);
-                case 5 -> { generateReportForIndex(idx); System.out.println("Report generated."); }
-                case 6 -> { changeStudentPasswordInteractive(idx); savePasswordsToFile(); }
-                case 7 -> { System.out.println("Logging out student."); return; }
-                default -> System.out.println("Invalid choice!");
+                case 1 : viewProfileForIndex(idx);
+                case 2 : viewMarksForIndex(idx);
+                case 3 : System.out.println("Attendance: " + attendance[idx] + "%");
+                case 4 : System.out.println("Fee Status: " + feeStatus[idx]);
+                case 5 : { generateReportForIndex(idx); System.out.println("Report generated."); }
+                case 6 : { changeStudentPasswordInteractive(idx); savePasswordsToFile(); }
+                case 7 : { System.out.println("Logging out student."); return; }
+                default : System.out.println("Invalid choice!");
             }
         }
     }
@@ -601,7 +620,7 @@ public class StudentManagementSystem {
         System.out.println("Science: " + science[idx]);
         int total = english[idx] + maths[idx] + science[idx];
         double percent = total / 3.0;
-        System.out.println("Percentage: " + String.format("%.2f", percent) + "%");
+        System.out.printf("Percentage:%.2f", percent + "%");
         String scholarship = (percent >= 85) ? "Full Scholarship" : (percent >= 70) ? "Partial Scholarship" : "No Scholarship";
         System.out.println("Scholarship Status: " + scholarship);
     }
@@ -781,7 +800,7 @@ public class StudentManagementSystem {
             while (sc.hasNextLine() && idx < studentCount) {
                 String line = sc.nextLine().trim();
                 if (line.isEmpty()) continue;
-                try { attendance[idx] = Integer.parseInt(line); } catch (Exception ex) { attendance[idx] = 0; }
+              //  try { attendance[idx] = ; } catch (Exception ex) { attendance[idx] = 0; }
                 idx++;
             }
         } catch (FileNotFoundException e) {
@@ -802,18 +821,20 @@ public class StudentManagementSystem {
         }
     }
 
-        static void loadFeesFromFile() {
-            try (Scanner sc = new Scanner(new File(FEES_FILE))) {
-                int idx = 0;
-                while (sc.hasNextLine() && idx < studentCount) {
-                    feeStatus[idx] = sc.nextLine().trim();
-                    idx++;
-                }
-            } catch (FileNotFoundException e) {
-                // no fees yet
-            } catch (Exception e) {
-                System.out.println("Error reading fees file: " + e.getMessage());
+    static void loadFeesFromFile() {
+        try (Scanner sc = new Scanner(new File(FEES_FILE))) {
+            int idx = 0;
+            while (sc.hasNextLine() && idx < studentCount) {
+                feeStatus[idx] = sc.nextLine().trim();
+                idx++;
             }
+        } catch (FileNotFoundException e) {
+            // no fees yet
+        } catch (Exception e) {
+            System.out.println("Error reading fees file: " + e.getMessage());
         }
     }
+}
+    
+
 
