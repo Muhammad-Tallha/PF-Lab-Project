@@ -1,0 +1,17 @@
+========== REPORT CARD ==========
+Name : Ammad butt
+Roll : 2
+
+Marks:
+  English : 76
+  Maths   : 90
+  Science : 84
+
+Total      : 250 /300
+Percentage : 83.33%
+Grade      : A
+
+Attendance : 0%
+Scholarship: Partial Scholarship
+Fee Status : NotPaid
+==================================

@@ -31,7 +31,6 @@ public class StudentManagementSystem {
 
     // Attendance and fee
     static String[] attendance = new String[MAX_STUDENTS]; // percentage
-    static int [] AttendancePercentage = new int [MAX_STUDENTS];
     static String[] feeStatus = new String[MAX_STUDENTS]; // "Paid" r "NotPaid"
 
     static int studentCount = 0;
@@ -40,8 +39,15 @@ public class StudentManagementSystem {
     static final String DEFAULT_STUDENT_PASSWORD = "student123";
 
     public static void main(String[] args) {
+      try{
         ensureFilesExist();
         mainMenu();
+    }catch(NoSuchElementException e){
+                //This catch block will handles Ctrl+Z/Ctrl+D (EOF)
+                System.out.println("\nExiting the program gracefully.");
+                input.close(); 
+                return;
+                }
     }
 
     // ----------------- Main Menu -----------------
@@ -211,8 +217,10 @@ public class StudentManagementSystem {
         feeStatus[studentCount] = "NotPaid";
 
         studentCount++;
-
+        
         System.out.println("Student added. Default password: " + DEFAULT_STUDENT_PASSWORD);
+        saveStudentsToFile();
+        System.out.println("studentCount="+studentCount);
     }
 
     // Edit student name by roll
@@ -237,9 +245,10 @@ public class StudentManagementSystem {
     }
 
     static void viewStudents() {
-        if (studentCount == 0) { System.out.println("No students found."); return; }
+       // if (studentCount == 0) { System.out.println("No students found."); return; }
 
         System.out.println("\n------ ALL STUDENT RECORDS ------");
+    
         for (int i = 0; i < studentCount; i++) {
             System.out.println((i+1) + ") Roll: " + rollNumbers[i] + " | Name: " + names[i]);
         }
@@ -359,7 +368,8 @@ public class StudentManagementSystem {
         else if (percentage >= 50) grade = "D";
         else grade = "F";
 
-        System.out.printf("Percentage: %.2f ", percentage + "%");
+        System.out.printf("Percentage: %3.2f %%",percentage );
+        System.out.println();
         System.out.println("Grade: " + grade);
     }
 
@@ -378,7 +388,7 @@ public class StudentManagementSystem {
 
             switch (ch) {
                 case 1 : { markAttendanceInteractive(); saveAttendanceToFile();break; }
-                case 2 : { loadAttendanceFromFile(); viewAttendanceAdmin();break; }
+                case 2 : { viewAttendanceAdmin();break; }
                 case 3 : { return; }
                 default : System.out.println("Invalid choice!");
             }
@@ -396,9 +406,12 @@ public class StudentManagementSystem {
 
         int idx = getIndexByRoll(roll);
         if (idx == -1) { System.out.println("Student not found!"); return; }
+        if (attendance[idx] == null) {
+          attendance[idx] = "";}
+          System.out.print("Mark attendance (P/A): ");
+          String temp = input.nextLine().trim().toUpperCase();
+          char ch = temp.charAt(0);
 
-        System.out.print("Mark attendance (P/A): ");
-        char ch = input.next().toUpperCase().charAt(0);
 
         if (ch == 'P' || ch == 'A') {
                 attendance[idx] += ch;
@@ -410,27 +423,59 @@ public class StudentManagementSystem {
         System.out.println("Current attendance for"+names[idx]+" : "+attendance[idx]+" ");
     }
 
-    static void viewAttendanceAdmin() {
-        System.out.print("Enter Roll Number: ");
-        String rl = input.nextLine().trim();
-        int roll;
-        try { roll = Integer.parseInt(rl); } catch (Exception e) { System.out.println("Invalid roll."); return; }
 
+static void viewAttendanceAdmin() {
+
+    loadStudentsFromFile();
+    loadAttendanceFromFile();
+
+    System.out.print("Enter Roll Number: ");
+    int roll = Integer.parseInt(input.nextLine().trim());
+
+    int idx = getIndexByRoll(roll);
+    if (idx == -1) {
+        System.out.println("Student not found!");
+        return;
+    }
+
+    String str = attendance[idx];
+
+    if (str == null || str.length() == 0) {
+        System.out.println("No attendance marked yet.");
+        return;
+    }
+
+    int present = 0;
+    for (char c : str.toCharArray()) {
+        if (c == 'P') present++;
+    }
+
+    int percentage = (present * 100) / str.length();
+    System.out.println("Attendance Percentage: " + percentage + "%");
+}
+
+        
+    
+    public static int calculateAttendancePercentage(int roll){
+        loadAttendanceFromFile();
         int idx = getIndexByRoll(roll);
-        if (idx == -1) { System.out.println("Student not found!"); return; }
+        if (idx == -1) { System.out.println("Student not found!"); return -1; }
+        
         String str = attendance[idx];
-        int count = 0;
-        int present=0;
-        char attend ;
-        for(int i=0; i<str.length();i++){
-            attend = str.charAt(i);
-            if(attend == 'P'){present++;}
-            count++;
-        }
-        AttendancePercentage[idx] = (present*100)/count;
-        System.out.println("AttendancePercentage : "+AttendancePercentage[idx]+" %" );
-        
-        
+
+    if (str == null || str.length() == 0) {
+        System.out.println("No attendance marked yet.");
+        return -1;
+    }
+
+    int present = 0;
+    for (char c : str.toCharArray()) {
+        if (c == 'P') present++;
+    }
+
+    int percentage = (present * 100) / str.length();
+    return percentage;
+  
     }
 
     // ----------------- Fee Menu -----------------
@@ -525,6 +570,7 @@ public class StudentManagementSystem {
     }
 
     static void generateReportForIndex(int idx) {
+        calculateAttendancePercentage(idx);
         String filename = "report_" + rollNumbers[idx] + ".txt";
         try (PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
             pw.println("========== REPORT CARD ==========");
@@ -538,7 +584,7 @@ public class StudentManagementSystem {
             int total = english[idx] + maths[idx] + science[idx];
             double percent = total / 3.0;
             pw.println();
-            pw.println("Total      : " + total);
+            pw.println("Total      : " + total+" /300");
             pw.println("Percentage : " + String.format("%.2f", percent) + "%");
             String grade = (percent >= 90) ? "A+" :
                            (percent >= 80) ? "A" :
@@ -547,7 +593,7 @@ public class StudentManagementSystem {
                            (percent >= 50) ? "D" : "F";
             pw.println("Grade      : " + grade);
             pw.println();
-            pw.println("Attendance : " + attendance[idx] + "%");
+            pw.println("Attendance : " + calculateAttendancePercentage(idx) + "%");
             String scholarship = (percent >= 85) ? "Full Scholarship" :
                                  (percent >= 70) ? "Partial Scholarship" : "No Scholarship";
             pw.println("Scholarship: " + scholarship);
@@ -597,7 +643,7 @@ public class StudentManagementSystem {
             switch (choice) {
                 case 1 : viewProfileForIndex(idx);break;
                 case 2 : viewMarksForIndex(idx);break;
-                case 3 : System.out.println("Attendance: " + attendance[idx] + "%");break;
+                case 3 : System.out.println("Attendance: " + attendance[idx] + "\nAttendance percentage:"+calculateAttendancePercentage(idx)+"%");break;
                 case 4 : System.out.println("Fee Status: " + feeStatus[idx]);break;
                 case 5 : { generateReportForIndex(idx); System.out.println("Report generated.");break; }
                 case 6 : { changeStudentPasswordInteractive(idx); savePasswordsToFile();break; }
@@ -620,7 +666,8 @@ public class StudentManagementSystem {
         System.out.println("Science: " + science[idx]);
         int total = english[idx] + maths[idx] + science[idx];
         double percent = total / 3.0;
-        System.out.printf("Percentage:%.2f", percent + "%");
+        System.out.printf("Percentage:%.2f %%", percent);
+        System.out.println();
         String scholarship = (percent >= 85) ? "Full Scholarship" : (percent >= 70) ? "Partial Scholarship" : "No Scholarship";
         System.out.println("Scholarship Status: " + scholarship);
     }
@@ -700,10 +747,10 @@ public class StudentManagementSystem {
 
             while (sc.hasNextLine()) {
 
-              int roll = sc.nextInt();     
-              sc.nextLine();               // eats \n
+              int roll = sc.nextInt();
 
-              String name = sc.nextLine(); 
+              String nameWithSpaces = sc.nextLine(); 
+              String name = nameWithSpaces.trim();
 
               rollNumbers[studentCount] = roll;
               names[studentCount] = name;
@@ -717,7 +764,7 @@ public class StudentManagementSystem {
         sc.close();
 
         } catch (FileNotFoundException e) {
-            // file will be created later; keep arrays empty
+            System.out.println("NO file found.");
             studentCount = 0;
         } catch (Exception e) {
             System.out.println("Error reading students file: " + e.getMessage());
@@ -729,7 +776,7 @@ public class StudentManagementSystem {
         try (PrintWriter pw = new PrintWriter(new FileWriter(PASSWORDS_FILE, false))) {
             for (int i = 0; i < studentCount; i++) {
                 String pass = studentPasswords[i] == null ? DEFAULT_STUDENT_PASSWORD : studentPasswords[i];
-                pw.println(rollNumbers[i] + " " + pass);
+                pw.println(pass);
             }
         } catch (Exception e) {
             System.out.println("Error writing passwords file: " + e.getMessage());
@@ -792,29 +839,33 @@ public class StudentManagementSystem {
     static void saveAttendanceToFile() {
         try (PrintWriter pw = new PrintWriter(new FileWriter(ATTENDANCE_FILE, false))) {
             for (int i = 0; i < studentCount; i++) {
-                pw.println(attendance[i]);
+                pw.println(attendance[i] == null ? "" : attendance[i]);
             }
         } catch (Exception e) {
             System.out.println("Error writing attendance file: " + e.getMessage());
         }
     }
 
-    static void loadAttendanceFromFile() {
-        try (Scanner sc = new Scanner(new File(ATTENDANCE_FILE))) {
-            int idx = 0;
-            while (sc.hasNextLine() && idx < studentCount) {
-                String line = sc.nextLine().trim();
-                if (line.isEmpty()) continue;
-                
-                 attendance[idx] = line; 
-                idx++;
+   static void loadAttendanceFromFile() {
+    try (Scanner sc = new Scanner(new File(ATTENDANCE_FILE))) {
+        int idx = 0;
+        while (sc.hasNextLine() && idx < studentCount) {
+            String line = sc.nextLine().trim();
+
+            if (line.isEmpty()) {
+                attendance[idx] = "";   // no overwrite with null
+            } else {
+                attendance[idx] = line;
             }
-        } catch (FileNotFoundException e) {
-            // no attendance yet
-        } catch (Exception e) {
-            System.out.println("Error reading attendance file: " + e.getMessage());
+
+            idx++;
         }
+    } catch (Exception e) {
+        System.out.println("Attendance file not found.");
     }
+}
+
+    
 
     // --- Fees file: one token per line (Paid/NotPaid) ---
     static void saveFeesToFile() {

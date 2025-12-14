@@ -1,0 +1,17 @@
+========== REPORT CARD ==========
+Name : Umar Farooq
+Roll : 12
+
+Marks:
+  English : 71
+  Maths   : 73
+  Science : 70
+
+Total      : 214 /300
+Percentage : 71.33%
+Grade      : B
+
+Attendance : 0%
+Scholarship: Partial Scholarship
+Fee Status : Paid
+==================================
