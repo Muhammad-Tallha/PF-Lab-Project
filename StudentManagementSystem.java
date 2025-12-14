@@ -7,7 +7,7 @@ public class StudentManagementSystem {
  static Scanner input = new Scanner(System.in);
 
     // Files
-     static final String STUDENTS_FILE = "C:\\students.txt";   // roll name
+     static final String STUDENTS_FILE = "students.txt";   // roll name
      static final String PASSWORDS_FILE = "passwords.txt"; // roll password
      static final String MARKS_FILE = "marks.txt";         // eng math sci
      static final String ATTENDANCE_FILE = "attendance.txt"; // single value per line
