@@ -1,0 +1,17 @@
+========== REPORT CARD ==========
+Name : Hira Malik
+Roll : 9
+
+Marks:
+  English : 69
+  Maths   : 65
+  Science : 68
+
+Total      : 202 /300
+Percentage : 67.33%
+Grade      : C
+
+Attendance : 0%
+Scholarship: No Scholarship
+Fee Status : Paid
+==================================

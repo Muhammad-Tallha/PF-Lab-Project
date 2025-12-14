@@ -1,0 +1,17 @@
+========== REPORT CARD ==========
+Name : Irum Ishfaq
+Roll : 3
+
+Marks:
+  English : 67
+  Maths   : 90
+  Science : 99
+
+Total      : 256 /300
+Percentage : 85.33%
+Grade      : A
+
+Attendance : 0%
+Scholarship: Full Scholarship
+Fee Status : Paid
+==================================

@@ -1,0 +1,17 @@
+========== REPORT CARD ==========
+Name : Abdullah Sheikh
+Roll : 6
+
+Marks:
+  English : 88
+  Maths   : 85
+  Science : 87
+
+Total      : 260 /300
+Percentage : 86.67%
+Grade      : A
+
+Attendance : 0%
+Scholarship: Full Scholarship
+Fee Status : Paid
+==================================

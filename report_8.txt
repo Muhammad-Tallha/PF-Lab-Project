@@ -1,0 +1,17 @@
+========== REPORT CARD ==========
+Name : Fatima Zahra
+Roll : 8
+
+Marks:
+  English : 84
+  Maths   : 80
+  Science : 82
+
+Total      : 246 /300
+Percentage : 82.00%
+Grade      : A
+
+Attendance : 60%
+Scholarship: Partial Scholarship
+Fee Status : Paid
+==================================
