@@ -1,0 +1,17 @@
+========== REPORT CARD ==========
+Name : Zain Abbas
+Roll : 13
+
+Marks:
+  English : 92
+  Maths   : 95
+  Science : 94
+
+Total      : 281 /300
+Percentage : 93.67%
+Grade      : A+
+
+Attendance : 60%
+Scholarship: Full Scholarship
+Fee Status : Paid
+==================================
